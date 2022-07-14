@@ -74,6 +74,8 @@ out_df[["id"]] = out_df[["id"]].fillna(value = 0)
 
 out_df["id"] = out_df["id"].astype(int) 
 
+print("Type 'y' and then press enter if the handle belongs to the company. Press enter or type 'n' otherwise.")
+
 for o in out:
     if companies_joined.index(o["username"].upper()) in np.array(list(not_found)).tolist()[0]: # i dont know how to convert from a tuple to a list.....
         add = input("y/n: [%s] [%s] [%s]\n[%s]\n" % (o["username"], o["name"], "https://twitter.com/" + o["username"], client.get_user(id=o["id"], user_fields=["description"])["data"]["description"]))
@@ -92,9 +94,10 @@ not_found = np.where(pd.isna(found_df["id"]))
 
 for nf in not_found[0]:
     handle = input("%s [https://twitter.com/search?q=%s&src=typed_query&f=user]\nEnter found handle:\n" % (normal_companies[nf], normal_companies[nf]))
-    o = client.get_user(username=handle)["data"]
-    tag[companies_joined.index(o["username"].upper())] = o["username"]
-    ids[companies_joined.index(o["username"].upper())] = o["id"]
-    username[companies_joined.index(o["username"].upper())] = o["name"]
-    out_df["id"] = ids
-    out_df.to_csv("temp_save.csv")
+    if (handle != "SKIP" and len(handle) != 0):
+        o = client.get_user(username=handle)["data"]
+        tag[nf] = o["username"]
+        ids[nf] = o["id"]
+        username[nf] = o["name"]
+        out_df["id"] = ids
+        out_df.to_csv("temp_save.csv")
