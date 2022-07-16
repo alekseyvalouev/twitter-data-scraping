@@ -73,7 +73,7 @@ for index, row in df.iterrows():
                 for tweet in tweets:
                     company_name.append(row["company"])
                     tweet_date.append(datetime.datetime.strptime(tweet['created_at'][:10], '%Y-%m-%d').strftime('%d-%b-%y'))
-                    tweet_text.append(tweet['text'])
+                    tweet_text.append(tweet['text'].replace('\n', ' ').replace('|', ' '))
                     tweet_id.append(tweet['id'])
                     
             except KeyError:
@@ -85,5 +85,8 @@ out_df["Company Name"] = company_name
 out_df["Date of Tweet"] = tweet_date
 out_df["Text of Tweet"] = tweet_text
 out_df["Tweet ID"] = tweet_id
+
+out_df = out_df.drop_duplicates("Tweet ID")
+out_df = out_df.reset_index(drop=True)
 
 out_df.to_csv("final_out.csv")
