@@ -18,7 +18,7 @@ import os
 bearer_token = os.environ.get("bearer-token")
 
 import tweepy
-client = tweepy.Client(bearer_token=bearer_token, return_type=dict)
+client = tweepy.Client(bearer_token=bearer_token)
 
 def simplify_company_name(name):
     n_name = name + " "
@@ -69,12 +69,21 @@ for index, row in df.iterrows():
             if old_start:
                 start = date_const
             try:
-                tweets = client.get_users_tweets(id=company_id, start_time=start, end_time=end, tweet_fields=["created_at"])["data"]
+                paginator = tweepy.Paginator(
+                    client.get_users_tweets,
+                    id=company_id,
+                    end_time=end,
+                    exclude=['replies'],
+                    start_time=start,
+                    tweet_fields=["created_at"],
+                    max_results=100
+                )
+                tweets = paginator.flatten()
                 for tweet in tweets:
                     company_name.append(row["company"])
-                    tweet_date.append(datetime.datetime.strptime(tweet['created_at'][:10], '%Y-%m-%d').strftime('%d-%b-%y'))
-                    tweet_text.append(tweet['text'].replace('\n', ' ').replace('|', ' '))
-                    tweet_id.append(tweet['id'])
+                    tweet_date.append(datetime.datetime.strptime(str(tweet.created_at)[:10], '%Y-%m-%d').strftime('%d-%b-%y'))
+                    tweet_text.append(tweet.text.replace('\n', ' ').replace('|', ' '))
+                    tweet_id.append(tweet.id)
                     
             except KeyError:
                 pass
